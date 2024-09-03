@@ -5,10 +5,7 @@
 #include <array>
 #include <time.h>
 
-#include "Game.h"
-
-#define WINDOW_SIZE_X 800
-#define WINDOW_SIZE_Y 600
+#include "GameManager.h"
 
 int main(int argc, char* argv[]) {
     srand((unsigned int)time(NULL));
@@ -31,51 +28,67 @@ int main(int argc, char* argv[]) {
         WINDOW_SIZE_X, WINDOW_SIZE_Y, SDL_WINDOW_SHOWN);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    SDL_Texture* texture = ResourceManager::LoadTexture("Assets/Images/chara_anim.png",renderer);
     ResourceManager::LoadFont("Assets/Fonts/DotGothic16-Regular.ttf");
 
-
     bool isRunning = true;
+    bool isPaused = false;
     SDL_Event event;
-    const float deltaTime = 1.0f / 60.0f;
-    float accumulator = 0.0f;
-    Uint32 currentTime = SDL_GetTicks();
-    Uint32 previousTime = currentTime;
 
-    float startTime = 0;
+    const int frameDelay = 1000 / 60;
+    Uint32 frameStart, frameTime, lastFrameTime = 0;
+    float deltaTime;
 
-    SDL_Texture* textTexture = nullptr;
-    SDL_Rect textRect;
-    Size textsize;
+    GameManager GM = GameManager(renderer);
 
     /*--------------------------------------"Game Loop"-------------------------------------*/
 
     while (isRunning) {
+
+        frameStart = SDL_GetTicks();
+
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 isRunning = false;
             }
+            else if (event.type == SDL_WINDOWEVENT) {
+                switch (event.window.event) {
+                case SDL_WINDOWEVENT_FOCUS_LOST:
+                case SDL_WINDOWEVENT_MINIMIZED:
+                    isPaused = true;
+                    break;
+                case SDL_WINDOWEVENT_FOCUS_GAINED:
+                case SDL_WINDOWEVENT_RESTORED:
+                    isPaused = false;
+                    break;
+                }
+            }
         }
 
-        currentTime = SDL_GetTicks();
-        float frameTime = (currentTime - previousTime) / 1000.0f;
-        previousTime = currentTime;
-        accumulator += frameTime;
+        if (!isPaused) {
 
-        SDL_RenderClear(renderer);
+            deltaTime = (frameStart - lastFrameTime) / 1000.0f;
+            lastFrameTime = frameStart;
 
-        SDL_SetRenderDrawColor(renderer, 86, 157, 225, 255);  // 背景
+            //シーン遷移をするときこのフレームは更新しない
+            if (!GM.CheckTransision()) {
 
-        std::string displayText = "タイム: " + std::to_string((currentTime - startTime) / 1000);
+                //ゲームの更新
+                GM.Update(deltaTime);
+            };
+                                           
+            SDL_RenderClear(renderer);         
 
-        if (textTexture) {
-            SDL_DestroyTexture(textTexture);
+            //Render処理
+            GM.Render();
+
+            SDL_RenderPresent(renderer);
         }
-        textTexture = ResourceManager::LoadFontTexture(displayText.c_str(), SDL_Color{ 255, 255, 255, 255 }, &textsize, renderer);
-        textRect = {100,100,600,200};
-        SDL_RenderCopy(renderer, textTexture, nullptr, &textRect); 
 
-        SDL_RenderPresent(renderer);
+        frameTime = SDL_GetTicks() - frameStart;
+
+        if (frameTime < frameDelay) {
+            SDL_Delay(frameDelay - frameTime);
+        }
     }
 
     /*--------------------------------------"Game Loop"-------------------------------------*/

@@ -1,5 +1,20 @@
-﻿  SDL_SimpleGame.cpp
-  SDLGameApp.vcxproj -> C:\Users\IPUT\source\repos\SDLGameApp\Debug\SDLGameApp.exe
+﻿  main.cpp
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\Utility.h(226,50): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\Utility.h(226,29): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\Utility.h(335,31): warning C4244: '=': 'double' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\GameObjects.h(152,21): warning C4244: '初期化中': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\GameObjects.h(153,21): warning C4244: '初期化中': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\GameObjects.h(164,31): warning C4244: '=': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\GameObjects.h(165,38): warning C4244: '=': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\GameManager.h(273,71): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\GameManager.h(273,55): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\GameManager.h(290,38): warning C4244: '=': 'double' から 'float' への変換です。データが失われる可能性があります。
+  ResourceManager.cpp
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\Utility.h(226,50): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\Utility.h(226,29): warning C4244: '引数': 'int' から 'float' への変換です。データが失われる可能性があります。
+C:\Users\taiki\SDL_SimpleGame\SDLGameApp\SDLGameApp\Utility.h(335,31): warning C4244: '=': 'double' から 'float' への変換です。データが失われる可能性があります。
+  コードを生成中...
+  SDLGameApp.vcxproj -> C:\Users\taiki\SDL_SimpleGame\SDLGameApp\Debug\SDLGameApp.exe
   C:\SDL\SDL2-2.30.6\lib\x86\SDL2.dll
   C:\SDL\SDL2-2.30.6\lib\x86\SDL2.lib
   C:\SDL\SDL2-2.30.6\lib\x86\SDL2main.lib

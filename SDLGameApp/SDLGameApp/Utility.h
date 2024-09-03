@@ -1,21 +1,27 @@
-#pragma once
+Ôªø#pragma once
 
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <string>
+#include <cmath>
 
-//ÉJÉâÅ[ÉeÉìÉvÉå
-#define COLOR_BLACK   SDL_Color{ 0, 0, 0, 255 }
-#define COLOR_WHITE   SDL_Color{ 255, 255, 255, 255 }
-#define COLOR_BLUE     SDL_Color{ 255, 0, 0, 255 }
+//„Ç´„É©„Éº„ÉÜ„É≥„Éó„É¨
+#define COLOR_BLACK     SDL_Color{ 0, 0, 0, 255 }
+#define COLOR_WHITE     SDL_Color{ 255, 255, 255, 255 }
+#define COLOR_BLUE      SDL_Color{ 0, 0, 255, 255 }
+#define COLOR_YELLOW    SDL_Color{ 255,255,0,0}
+#define COLOR_LIGHTBLUE SDL_Color{ 86, 157, 225, 255 }
 
-constexpr float DEG_TO_RAD = M_PI / 180.0f;
+#define WINDOW_SIZE_X 800
+#define WINDOW_SIZE_Y 600
+
+constexpr float DEG_TO_RAD = 3.14159265358979323846f / 180.0f;
+constexpr float DEFAULT_VECTOR = 90.0f;
 constexpr int IMAGESIZE = 32;
-constexpr float DEF_VECTOR = 90.0f;
 using uINT = uint8_t;
 
-//ècÇ∆â°ÇÃëÂÇ´Ç≥
+//Á∏¶„Å®Ê®™„ÅÆÂ§ß„Åç„Åï
 struct Size {
     int width;
     int height;
@@ -24,65 +30,101 @@ struct Size {
     Size(int w, int h) : width(w), height(h) {}
 };
 
-//ç◊Ç©Ç¢ïœâªó Çï€Ç¬à◊Ç…floatÇ≈ï€éù
+//Á¥∞„Åã„ÅÑÂ§âÂåñÈáè„Çí‰øù„Å§ÁÇ∫„Å´float„Åß‰øùÊåÅ
 struct Point {
     float x;
     float y;
 
     Point() : x(0.0f),y(0.0f) {}
-    Point(int x,int y) : x(x),y(y){}
+    Point(float x, float y) : x(x),y(y){}
 };
 
-//âÊëú
+//ÁîªÂÉè
 struct Image{
-    SDL_Rect rect = {0,0,0,0};
-    SDL_Texture* texture = nullptr;
+    SDL_Rect rect;
+    SDL_Texture* texture;
+    Image() : rect({ 0,0,0,0 }),texture(nullptr) {}
+    Image(SDL_Rect rect, SDL_Texture* texture) : rect(rect), texture(texture) {}
 };
 
-//ÉXÉvÉâÉCÉgÉVÅ[ÉgÇópÇ¢Çƒï`âÊÇ∑ÇÈà◊ÇÃÉNÉâÉX
-//ImageÇÃè„ëwÇ…íuÇ¢Çƒégóp
+//„Çπ„Éó„É©„Ç§„Éà„Ç∑„Éº„Éà„ÇíÁî®„ÅÑ„Å¶ÊèèÁîª„Åô„ÇãÁÇ∫„ÅÆ„ÇØ„É©„Çπ
+//Image„ÅÆ‰∏äÂ±§„Å´ÁΩÆ„ÅÑ„Å¶‰ΩøÁî®
 class Animation {
 private:
-    SDL_Rect srcrect = {0,0,IMAGESIZE,IMAGESIZE };//ÉeÉNÉXÉ`ÉÉêÿÇËéÊÇËà íu
+    SDL_Rect srcrect = {0,0,IMAGESIZE,IMAGESIZE };//„ÉÜ„ÇØ„Çπ„ÉÅ„É£Âàá„ÇäÂèñ„Çä‰ΩçÁΩÆ
     uINT MaxFrame = 0;
     uINT CurrentFrameIndex = 0;
     float frameCount = 0.0f;
     float animDuration = 0.0f;
-    bool DoAnim = true;
+    bool isAnim = true;
+    bool isBlink = true;
+    bool flg_blink = false;
+    bool flg_onceAnim = false;
 public:
     Animation(uINT maxframe,float duration) 
         : animDuration(duration),MaxFrame(maxframe) {
         CurrentFrameIndex = 0;
         frameCount = 0;
     }
-    SDL_Rect* GetsrcRect(float deltaTime) {
+    SDL_Rect* GetSrcRect() {
+        return &srcrect;
+    }
+    void UpdateFrameCheck(float deltaTime) {
         srcrect.x = CurrentFrameIndex * IMAGESIZE;
-        if (DoAnim) {
+        if (isAnim) {
             frameCount += deltaTime;
             if (frameCount > animDuration) {
                 frameCount = 0;
                 CurrentFrameIndex++;
                 if (CurrentFrameIndex >= MaxFrame) {
                     CurrentFrameIndex = 0;
+
+                    if (flg_onceAnim) {
+                        flg_onceAnim = false;
+                        ToggleAnim(false);
+                    }
+                }
+                if (isBlink) {
+                    flg_blink = !flg_blink;
                 }
             }
         }
-        return &srcrect;
     }
-    //êÿÇËë÷Ç¶Ç™àÍìxÇÃèàóùÇ≈çœÇﬁÇÊÇ§Ç…
-    void SetOffAnim() {
-        DoAnim = false;
+    void ToggleAnim(bool Is) {
+        isAnim = Is;
         CurrentFrameIndex = 0;
         frameCount = 0;
     }
-    void SetOnAnim() {
-        DoAnim = true;
+    void ToggleBlink(bool Is) {
+        isBlink = Is;
+        flg_blink = Is;  //ÁÇπÊªÖ„Ç™„É≥„Åßfalse„ÄÄÁÇπÊªÖ„Ç™„Éï„Åßtrue„ÇíËøî„Åô
+        CurrentFrameIndex = 0;
+        frameCount = 0;
+    }
+    void TriggerOnceAnim() {
+        if (flg_onceAnim) {
+            return;
+        }
+        ToggleAnim(true);
+        flg_onceAnim = true;
+    }
+    bool GetBlink() {
+        return flg_blink;
+    }
+    void UpdateBlinkCheck(float deltaTime) {
+        if (isBlink) {
+            frameCount += deltaTime;
+            if (frameCount > animDuration) {
+                frameCount = 0;
+                flg_blink = !flg_blink;
+            }
+        }
     }
 };
 
-//ÉxÉNÉgÉãÅ@âÒì]ÇÃäpìxÇï€éùÇ∑ÇÈ
+//„Éô„ÇØ„Éà„É´„ÄÄÂõûËª¢„ÅÆËßíÂ∫¶„Çí‰øùÊåÅ„Åô„Çã
 struct Vector {
-    float x = 0, y = 0;
+    float x = 0.0f, y = 0.0f;
     float angle = 0.0f;
     float magnitude = 0.0f;
     bool isMagnitudeDirty = true;
@@ -150,7 +192,7 @@ struct Vector {
     }
 };
 
-//ÉxÉNÉgÉãÇ∆ÉXÉsÅ[ÉhÇÇ‡Ç¬Ç‡ÇÃÇObjectÇ∆íËã`Ç∑ÇÈ
+//„Éô„ÇØ„Éà„É´„Å®„Çπ„Éî„Éº„Éâ„Çí„ÇÇ„Å§„ÇÇ„ÅÆ„ÇíObject„Å®ÂÆöÁæ©„Åô„Çã
 struct Object : public Image {
     Point point;
     float speed = 0;
@@ -169,86 +211,241 @@ struct Object : public Image {
     void Move(float deltaX, float deltaY) {
         point.x += speed * deltaX;
         point.y += speed * deltaY;
+    }
+    void MoveVector(float delta) {
+        point.x += speed * vect.x * delta;
+        point.y += speed * vect.y * delta;
+    }
+    SDL_Rect* GetUpdateRect() {
         rect.x = (int)point.x;
         rect.y = (int)point.y;
+        return &rect;
+    }
+
+    Point GetMidPoint() const {
+        return Point(rect.x + rect.w / 2, rect.y + rect.h / 2);
     }
 };
 
-//ãÈå`ÇÃìñÇΩÇËîªíËÇéùÇ¬ÉIÉuÉWÉFÉNÉg
+//Áü©ÂΩ¢„Å®ÂÜÜ„ÅÆÂΩì„Åü„ÇäÂà§ÂÆö„ÇíÊåÅ„Å§„Ç™„Éñ„Ç∏„Çß„ÇØ„Éà
+/*
+struct CollisionObject : public Object, public Animation {
+    SDL_Rect col_rect = { 0,0,0,0 };
+    float col_radius = 0;
+    CollisionObject() : Object(Point(), 0, 0, Size(), nullptr), Animation(0, 0) {}
+    CollisionObject(Point initPoint, float initSpeed, float rad, Size size, SDL_Texture* texture, int animFrame, float duration)
+        : Object(initPoint, initSpeed, DEFAULT_VECTOR, size, texture),
+        Animation(animFrame, duration), col_radius(rad) {}
+};
+*/
+
+//Áü©ÂΩ¢„ÅÆÂΩì„Åü„ÇäÂà§ÂÆö„ÇíÊåÅ„Å§„Ç™„Éñ„Ç∏„Çß„ÇØ„Éà
 struct RectCollisionObject : public Object{
     RectCollisionObject() : Object(Point(), 0, 0, Size(), nullptr) {}
     RectCollisionObject(Point initPoint, float initSpeed, Size size, SDL_Texture* texture)
-        : Object(initPoint, initSpeed, DEF_VECTOR, size, texture) {}
-    SDL_Rect GetRect() {
-        return rect;
+        : Object(initPoint, initSpeed, DEFAULT_VECTOR, size, texture) {}
+    bool CheckRectCollision(const Point& point) const {
+        bool insideX = point.x >= rect.x && point.x <= rect.x + rect.w;
+        bool insideY = point.y >= rect.y && point.y <= rect.y + rect.h;
+        return insideX && insideY;
     }
 };
 
-//â~ÇÃìñÇΩÇËîªíËÇéùÇ¬ÉIÉuÉWÉFÉNÉg
+//ÂÜÜ„ÅÆÂΩì„Åü„ÇäÂà§ÂÆö„ÇíÊåÅ„Å§„Ç™„Éñ„Ç∏„Çß„ÇØ„Éà
 struct RadCollisionObject : public Object, public Animation{
     float col_radius = 0;
     RadCollisionObject() : Object(Point(), 0, 0, Size(), nullptr),Animation(0,0) {}
     RadCollisionObject(Point initPoint, float initSpeed, float rad, Size size, SDL_Texture* texture, int animFrame, float duration)
-        : Object(initPoint, initSpeed, DEF_VECTOR, size, texture),
+        : Object(initPoint, initSpeed, DEFAULT_VECTOR, size, texture),
         Animation(animFrame, duration), col_radius(rad) {}
     float GetCollisionRadius() {
         return col_radius;
     }
+    bool CheckCircleCollision(Point midp, float rad) {
+        Point mp = GetMidPoint();
+        float dx = midp.x - mp.x;
+        float dy = midp.y - mp.y;
+        float distanceSq = (dx * dx) + (dy * dy);
+        float collisionRadSq = (col_radius + rad) * (col_radius + rad);
+        return distanceSq <= collisionRadSq;
+    }
 };
 
-//â~ÇÃìñÇΩÇËîªíËÇéùÇ¬ÉIÉuÉWÉFÉNÉg Ç©Ç¬ ÉAÉjÉÅÅ[ÉVÉáÉìÇéùÇΩÇ»Ç¢
+//ÂÜÜ„ÅÆÂΩì„Åü„ÇäÂà§ÂÆö„ÇíÊåÅ„Å§„Ç™„Éñ„Ç∏„Çß„ÇØ„Éà „Åã„Å§ „Ç¢„Éã„É°„Éº„Ç∑„Éß„É≥„ÇíÊåÅ„Åü„Å™„ÅÑ
 struct RadCollisionObject_ex : public Object{
     float col_radius = 0;
     RadCollisionObject_ex() : Object(Point(), 0, 0, Size(), nullptr) {}
     RadCollisionObject_ex(Point initPoint, float initSpeed, float rad, Size size, SDL_Texture* texture)
-        : Object(initPoint, initSpeed, DEF_VECTOR, size, texture),
+        : Object(initPoint, initSpeed, DEFAULT_VECTOR, size, texture),
         col_radius(rad) {}
     float GetCollisionRadius() {
         return col_radius;
     }
 };
 
-/*
-struct Object {
+//„Ç∑„Éº„É≥Âü∫Â∫ï„ÇØ„É©„Çπ
+class Scene {
+public:
+    virtual ~Scene() {}
+    virtual void update(float deltaTime) = 0;
+    virtual void render(SDL_Renderer* renderer) = 0;
+    bool isTransitioning() const {
+        return IsTransition;
+    }
+protected:
+    bool IsTransition = false;
+};
+
+//UI „Ç≤„Éº„Ç∏
+class Gauge : public Animation {
 private:
+    float recover_speed;  // ÂõûÂæ©ÈÄüÂ∫¶
+    float degree_speed;  // Ê∏õÂ∞ëÈÄüÂ∫¶
+    float gauge;  // ÁèæÂú®„Ç≤„Éº„Ç∏
+    float MAXGAUGE;  // ÊúÄÂ§ß„Ç≤„Éº„Ç∏
+    Image* gaugeBack = nullptr; // „Ç≤„Éº„Ç∏„ÅÆ„Éê„ÉÉ„ÇØÁîªÂÉè
+    Image* gaugeFront = nullptr; // „Ç≤„Éº„Ç∏„ÅÆ„Éï„É≠„É≥„ÉàÁîªÂÉè
 
-    SDL_Rect rect = { 0,0,0,0 };  //å©ÇΩñ⁄rect
-    SDL_Texture* texture = nullptr;  //ÉeÉNÉXÉ`ÉÉ
-    float col_radius = 0;//îªíËÇÃ
-    float speed = 0;
+    bool isDotDamage = false;
+    bool flg_blink = false;
+    float elapsedTime = 0;
+    float dotDamage = 0.1f;
 
-    Object(Point initPoint, float initSpeed, Size size, float rad, float duration,int animFrame, SDL_Texture* texture)
-        : Animation(animFrame,duration), col_radius(rad), speed(initSpeed), point(initPoint) {
-        this->texture = texture;
-        rect = { static_cast<int>(initPoint.x), static_cast<int>(initPoint.y), size.width, size.height };
-    }
-    void initObject(Point initP, float initSpeed) {
-        point = initP;
-        rect = { static_cast<int>(initP.x), static_cast<int>(initP.y), rect.w, rect.h };
-    }
-    void Move(float deltaX, float deltaY) {
-        point.x += speed * deltaX;
-        point.y += speed * deltaY;
-        rect.x = (int)point.x;
-        rect.y = (int)point.y;
-    }
-    bool CheckCollision(Object& collision) {
-        Point midPoint;
-        midPoint.x = collision.point.x - point.x;
-        midPoint.y = collision.point.y - point.y;
-        float distanceSq = (midPoint.x * midPoint.x) + (midPoint.y * midPoint.y);
-        float collisionRadSq = (col_radius + collision.col_radius) * (col_radius + collision.col_radius);
-        return distanceSq <= collisionRadSq;
+    bool end = false;
+public:
+    Gauge() : recover_speed(0), degree_speed(0), gauge(0), MAXGAUGE(0), Animation(0, 0) {}
+    Gauge(float maxGauge, float recoverSpeed, float degreeSpeed, Image* backImage, Image* frontImage)
+        : gauge(maxGauge), MAXGAUGE(maxGauge), recover_speed(recoverSpeed), degree_speed(degreeSpeed),
+        gaugeBack(backImage), gaugeFront(frontImage), Animation(0, 0.1f) {
+        gaugeFront->rect.w = gaugeBack->rect.w;
     }
 
-    void Rend(SDL_Renderer* renderer) {
-        SDL_RenderCopyEx(
-            renderer, 
-            texture, 
-            &srcRect, 
-            &destRect, 
-            angle, 
-            &center, 
-            SDL_FLIP_NONE);
+    void GetStartSpeedDamage() {
+        gauge -= MAXGAUGE * 0.02f;
     }
-};*/
+
+    void GetHeal(uINT x) {
+        gauge += MAXGAUGE;//* (0.1f + 0.1f * x)
+        if (gauge > MAXGAUGE) {
+            gauge = MAXGAUGE;
+        }
+    }
+
+    void ChangeDotDamage(uINT x) {
+        recover_speed = 15.0f * (1.0 + 0.2f * x);
+        dotDamage = 0.1f + 0.1f * x;
+        if (dotDamage >= 0.6f) {
+            dotDamage = 0.6f;
+        }
+    }
+
+    void GetDotDamageEX() {
+        if (isDotDamage) return;
+        isDotDamage = true;
+        gauge -= MAXGAUGE * dotDamage;
+    }
+
+    void GetDotDamage() {
+        if (isDotDamage) return;
+        isDotDamage = true;
+        gauge -= MAXGAUGE * dotDamage;
+    }
+
+    bool CheckGaugeZero() {
+        return end;
+    }
+
+    void UpdateGauge(float delta, bool isMoving) {
+
+        if (gauge < 0.0001f) {
+            end = true;
+            return;
+        }
+
+
+        if (isDotDamage) {
+            elapsedTime += delta;
+            float damageInterval = 0.6f;
+            if (elapsedTime >= damageInterval) {
+                elapsedTime = 0;
+                isDotDamage = false;
+            }
+        }
+        else {
+            if (isMoving) {
+                // Ê∏õÂ∞ëÂá¶ÁêÜ
+                gauge -= degree_speed * delta;
+                if (gauge < 0) {
+                    gauge = 0;
+                }
+            }
+            else {
+                // ÂõûÂæ©Âá¶ÁêÜ
+                if (gauge < MAXGAUGE) {
+                    gauge += recover_speed * delta;
+                    if (gauge > MAXGAUGE) {
+                        gauge = MAXGAUGE;
+                    }
+                }
+            }
+        }
+
+        if (!flg_blink && gauge < MAXGAUGE * 0.2f) {
+            flg_blink = true;
+            ToggleBlink(true);
+        }
+        else if(flg_blink && gauge > MAXGAUGE * 0.2f){
+            flg_blink = false;
+            ToggleBlink(false);
+        }      
+        UpdateBlinkCheck(delta);
+    }
+
+    void RenderGauge(SDL_Renderer* renderer) {
+
+        if (!GetBlink()) {
+            gaugeFront->rect.w = static_cast<int>((gauge / MAXGAUGE) * gaugeBack->rect.w);
+            SDL_RenderCopy(renderer, gaugeBack->texture, nullptr, &gaugeBack->rect);  // „Ç≤„Éº„Ç∏Âæå
+            SDL_RenderCopy(renderer, gaugeFront->texture, nullptr, &gaugeFront->rect); // „Ç≤„Éº„Ç∏Ââç
+        }
+    }
+
+    void InitSpeed(float recoverSpeed, float degreeSpeed) {
+        recover_speed = recoverSpeed;
+        degree_speed = degreeSpeed;
+    }
+
+    void InitMaxGauge(float maxGauge) {
+        MAXGAUGE = maxGauge;
+    }
+};
+
+//YËª∏ÁßªÂãï„Ç¢„Éã„É°„Éº„Ç∑„Éß„É≥
+class MoveAnimationY {
+private:
+    SDL_Rect* rect = nullptr;
+    Point point;
+    float targetY;
+    float moveSpeed;
+    bool IsAnimEnd = false;
+public:
+    MoveAnimationY() : targetY(0), moveSpeed(0) {}
+    MoveAnimationY(SDL_Rect* rect, float targetY, float moveSpeed)
+        : rect(rect), targetY(targetY), moveSpeed(moveSpeed),
+        point(Point((float)(rect->x), (float)(rect->y))) {}
+
+    void Update(float deltaTime) {
+        if (rect->y > targetY) {
+            point.y -= moveSpeed * deltaTime;
+            rect->y = (int)(point.y);
+        }
+        else {
+            rect->y = (int)targetY;
+            IsAnimEnd = true;
+        }
+    }
+
+    bool GetIsAnimEnd() { return IsAnimEnd; }
+
+    SDL_Rect* GetCurrentRect() { return rect; }
+};

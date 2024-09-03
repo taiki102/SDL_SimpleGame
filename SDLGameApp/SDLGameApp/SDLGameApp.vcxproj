@@ -148,15 +148,14 @@ xcopy "C:\SDL\SDL2_ttf-2.22.0\lib\x86" "$(OutDir)" /i /s /y</Command>
     <Image Include="Images\enemy.png" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
-    <ClCompile Include="ソース.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Game.h" />
+    <ClInclude Include="GameManager.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Utility.h" />
+    <ClInclude Include="GameObjects.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
